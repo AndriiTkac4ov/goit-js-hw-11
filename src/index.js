@@ -9,10 +9,11 @@ refs.searchForm.addEventListener('submit', searchImages);
 function searchImages(event) {
     event.preventDefault();
 
-    console.log('Hello JS!!!')
-}
+    const form = event.currentTarget;
+    const searchQuery = form.elements.searchQuery.value;
 
-const flowersArray = API.fetchPhotoes('flowers').then(renderPhotoCard).catch(onFetchError);
+    API.fetchPhotoes(searchQuery).then(renderPhotoCard).catch(onFetchError);
+}
 
 function renderPhotoCard(responseObject) {
     const photoesArray = responseObject.hits;
@@ -31,16 +32,16 @@ function createPhotoMarkup(photoArray) {
                     <img src="${webformatURL}" alt="${tags}" loading="lazy" width="320px" height="210px"/>
                     <div class="info">
                         <p class="info-item">
-                            <b>Likes</b>${likes}
+                            <b>Likes</b><br/>${likes}
                         </p>
                         <p class="info-item">
-                            <b>Views</b>${views}
+                            <b>Views</b><br/>${views}
                         </p>
                         <p class="info-item">
-                            <b>Comments</b>${comments}
+                            <b>Comments</b><br/>${comments}
                         </p>
                         <p class="info-item">
-                            <b>Downloads</b>${downloads}
+                            <b>Downloads</b><br/>${downloads}
                         </p>
                     </div>
                 </div>
