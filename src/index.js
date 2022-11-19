@@ -11,19 +11,29 @@ const imagesApiService = new ImagesApiService();
 
 function searchImages(event) {
     event.preventDefault();
+    clearGallery();
 
     imagesApiService.query = event.currentTarget.elements.searchQuery.value;
+    imagesApiService.resetPage();
+    imagesApiService.fetchImages()
+        .then(({ totalHits, hits }) => {
+            // if (totalHits - totalHits/40 <= 1) {
+            //     Notify.info("We're sorry, but you've reached the end of search results.");
+            // };
+            if (hits.length > 0) {
+                Notify.success(`Hooray! We found ${totalHits} images.`);
+            };
+            if (hits.length === 0) {
+                Notify.info("Sorry, there are no images matching your search query. Please try again.");
+            } else {
+                renderGallery(hits);
+            };
+        })
+        .catch(onFetchError);
+};
 
-    imagesApiService.fetchImages(searchQuery).then(renderGallery).catch(onFetchError);
-}
-
-function renderGallery(responseObject) {
-    const arrayForGallery = responseObject.hits;
+function renderGallery(arrayForGallery) {
     const galleryMarkup = createGalleryMarkup(arrayForGallery);
-
-    // if (arrayForGallery = []) {
-    //     return Notify.failure("Sorry, there are no images matching your search query. Please try again.");
-    // };
 
     refs.galleryListEl.insertAdjacentHTML('beforeend', galleryMarkup);
 };
@@ -57,9 +67,13 @@ function createGalleryMarkup(imagesArray) {
 };
 
 function onLoadMore () {
-    imagesApiService.fetchImages(searchQuery).then(renderGallery).catch(onFetchError);
+    imagesApiService.fetchImages().then(({ hits }) => renderGallery(hits)).catch(onFetchError);
+};
+
+function clearGallery() {
+    refs.galleryListEl.innerHTML = '';
 };
 
 function onFetchError(error) {
-    Notify.failure(error);
+    Notify.failure(error.message);
 };
