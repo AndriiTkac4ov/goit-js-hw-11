@@ -4,45 +4,33 @@ const refs = getRefs();
 
 refs.searchForm.addEventListener('submit', searchImages);
 
-console.log(refs.searchInput)
-console.log(refs.searchBtn)
-console.log(refs.searchForm)
-
 function searchImages(event) {
     event.preventDefault();
 
     console.log('Hello JS!!!')
 }
 
-function fetchPhotoArrayPromise(saerchingWord) {
-    const url =`https://pixabay.com/api/?key=31433732-587fed4cb039ee24c3149a17c&q=flowers&image_type=photo`;
+function fetchPhotoArrayPromise(searchingWord) {
+    const API_KEY = '31433732-587fed4cb039ee24c3149a17c';
+    const q = searchingWord;
+    const URL =`https://pixabay.com/api/?key=${API_KEY}&q=${q}&image_type=photo&orientation=horizontal&safesearch=true`;
 
-    return fetch(url).then(response => {
+    return fetch(URL).then(response => {
         if (!response.ok) {
             throw new Error(response.status);
-        }
+        };
     
         return response.json();
     });
-}
+};
 
-fetchPhotoArrayPromise().then(ph=>console.log('Dont STOP!!!'))
+const flowersArray = fetchPhotoArrayPromise('flowers').then(ph => renderPhotoCard(ph.hits)).catch(error => console.log(error));
 
-function renderPhotoCard(photoArray) {
-    const galleryMarkup = createPhotoMarkup(galleryItems);
+function renderPhotoCard(photoesArray) {
+    const galleryMarkup = createPhotoMarkup(photoesArray);
 
     refs.galleryListEl.insertAdjacentHTML('beforeend', galleryMarkup);
 };
-
-
-// // webformatURL - посилання на маленьке зображення для списку карток.
-// // largeImageURL - посилання на велике зображення.
-// // tags - рядок з описом зображення. Підійде для атрибуту alt.
-// // likes - кількість лайків.
-// // views - кількість переглядів.
-// // comments - кількість коментарів.
-// // downloads - кількість завантажень.
-
 
 function createPhotoMarkup(photoArray) {
     return photoArray
@@ -51,7 +39,7 @@ function createPhotoMarkup(photoArray) {
 
             return `
                 <div class="photo-card">
-                    <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+                    <img src="${webformatURL}" alt="${tags}" loading="lazy" width="320px" height="210px"/>
                     <div class="info">
                         <p class="info-item">
                             <b>Likes</b>${likes}
@@ -65,6 +53,7 @@ function createPhotoMarkup(photoArray) {
                         <p class="info-item">
                             <b>Downloads</b>${downloads}
                         </p>
+                    </div>
                 </div>
             `
         })
