@@ -1,31 +1,37 @@
 import getRefs from './get-refs';
-import API from './api-service';
+import ImagesApiService from './api-service';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = getRefs();
 
 refs.searchForm.addEventListener('submit', searchImages);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
+
+const imagesApiService = new ImagesApiService();
 
 function searchImages(event) {
     event.preventDefault();
 
-    const form = event.currentTarget;
-    const searchQuery = form.elements.searchQuery.value;
+    imagesApiService.query = event.currentTarget.elements.searchQuery.value;
 
-    API.fetchPhotoes(searchQuery).then(renderPhotoCard).catch(onFetchError);
+    imagesApiService.fetchImages(searchQuery).then(renderGallery).catch(onFetchError);
 }
 
-function renderPhotoCard(responseObject) {
-    const photoesArray = responseObject.hits;
-    const galleryMarkup = createPhotoMarkup(photoesArray);
+function renderGallery(responseObject) {
+    const arrayForGallery = responseObject.hits;
+    const galleryMarkup = createGalleryMarkup(arrayForGallery);
+
+    // if (arrayForGallery = []) {
+    //     return Notify.failure("Sorry, there are no images matching your search query. Please try again.");
+    // };
 
     refs.galleryListEl.insertAdjacentHTML('beforeend', galleryMarkup);
 };
 
-function createPhotoMarkup(photoArray) {
-    return photoArray
-        .map(photo => {
-            const { webformatURL, tags, likes, views, comments, downloads } = photo;
+function createGalleryMarkup(imagesArray) {
+    return imagesArray
+        .map(image => {
+            const { webformatURL, tags, likes, views, comments, downloads } = image;
 
             return `
                 <div class="photo-card">
@@ -50,6 +56,10 @@ function createPhotoMarkup(photoArray) {
         .join('');
 };
 
+function onLoadMore () {
+    imagesApiService.fetchImages(searchQuery).then(renderGallery).catch(onFetchError);
+};
+
 function onFetchError(error) {
-    Notify.failure("Sorry, there are no images matching your search query. Please try again.");
+    Notify.failure(error);
 };
