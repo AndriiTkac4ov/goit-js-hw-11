@@ -1,4 +1,6 @@
 import getRefs from './get-refs';
+import API from './api-service';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = getRefs();
 
@@ -10,23 +12,10 @@ function searchImages(event) {
     console.log('Hello JS!!!')
 }
 
-function fetchPhotoArrayPromise(searchingWord) {
-    const API_KEY = '31433732-587fed4cb039ee24c3149a17c';
-    const q = searchingWord;
-    const URL =`https://pixabay.com/api/?key=${API_KEY}&q=${q}&image_type=photo&orientation=horizontal&safesearch=true`;
+const flowersArray = API.fetchPhotoes('flowers').then(renderPhotoCard).catch(onFetchError);
 
-    return fetch(URL).then(response => {
-        if (!response.ok) {
-            throw new Error(response.status);
-        };
-    
-        return response.json();
-    });
-};
-
-const flowersArray = fetchPhotoArrayPromise('flowers').then(ph => renderPhotoCard(ph.hits)).catch(error => console.log(error));
-
-function renderPhotoCard(photoesArray) {
+function renderPhotoCard(responseObject) {
+    const photoesArray = responseObject.hits;
     const galleryMarkup = createPhotoMarkup(photoesArray);
 
     refs.galleryListEl.insertAdjacentHTML('beforeend', galleryMarkup);
@@ -58,4 +47,8 @@ function createPhotoMarkup(photoArray) {
             `
         })
         .join('');
+};
+
+function onFetchError(error) {
+    Notify.failure("Sorry, there are no images matching your search query. Please try again.");
 };
