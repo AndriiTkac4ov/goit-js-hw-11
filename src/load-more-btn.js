@@ -2,7 +2,9 @@ export class LoadMoreBtn {
     constructor({ selector, hidden = false }) {
         this.refs = this.getRefs(selector);
 
-        this.hide();
+        if (hidden) {
+            this.hide();
+        };
     }
 
     getRefs(selector) {

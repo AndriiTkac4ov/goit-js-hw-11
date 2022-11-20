@@ -1,9 +1,11 @@
 import getRefs from './get-refs';
 import ImagesApiService from './api-service';
-
+import axios from 'axios';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = getRefs();
+
+refs.loadMoreBtn.classList.add('is-hidden');
 
 refs.searchForm.addEventListener('submit', searchImages);
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
@@ -13,19 +15,18 @@ const imagesApiService = new ImagesApiService();
 function searchImages(event) {
     event.preventDefault();
     clearGallery();
+    refs.loadMoreBtn.classList.remove('is-hidden');
 
     imagesApiService.query = event.currentTarget.elements.searchQuery.value;
     imagesApiService.resetPage();
     imagesApiService.fetchImages()
         .then(({ totalHits, hits }) => {
-            // if (totalHits - totalHits/40 <= 1) {
-            //     Notify.info("We're sorry, but you've reached the end of search results.");
-            // };
             if (hits.length > 0) {
                 Notify.success(`Hooray! We found ${totalHits} images.`);
             };
             if (hits.length === 0) {
                 Notify.info("Sorry, there are no images matching your search query. Please try again.");
+                refs.loadMoreBtn.classList.add('is-hidden');
             } else {
                 renderGallery(hits);
             };
@@ -68,7 +69,11 @@ function createGalleryMarkup(imagesArray) {
 };
 
 function onLoadMore () {
-    imagesApiService.fetchImages().then(({ hits }) => renderGallery(hits)).catch(onFetchError);
+    imagesApiService.fetchImages()
+        .then(({ hits }) => {
+            renderGallery(hits);
+        })
+        .catch (onFetchError);
 };
 
 function clearGallery() {
