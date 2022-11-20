@@ -1,5 +1,6 @@
 import getRefs from './get-refs';
 import ImagesApiService from './api-service';
+
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = getRefs();
