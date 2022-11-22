@@ -1,6 +1,5 @@
 import getRefs from './get-refs';
-import ImagesApiService from './api-service';
-import axios from 'axios';
+import ImagesApiService from './api-service-with-async';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = getRefs();
@@ -25,7 +24,7 @@ function searchImages(event) {
                 Notify.success(`Hooray! We found ${totalHits} images.`);
             };
             if (hits.length === 0) {
-                Notify.info("Sorry, there are no images matching your search query. Please try again.");
+                Notify.warning("Sorry, there are no images matching your search query. Please try again.");
                 refs.loadMoreBtn.classList.add('is-hidden');
             } else {
                 renderGallery(hits);
