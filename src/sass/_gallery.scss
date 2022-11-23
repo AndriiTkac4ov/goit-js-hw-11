@@ -10,6 +10,13 @@
 .photo-card {
     border: 1px solid brown;
     border-radius: 4px;
+
+    transition: scale, 250ms;
+    
+    &:hover,
+    &:focus {
+        scale: 1.02;
+    }
 }
 
 .info {

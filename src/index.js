@@ -1,6 +1,8 @@
 import getRefs from './get-refs';
 import ImagesApiService from './api-service-with-async';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 const refs = getRefs();
 
@@ -20,12 +22,16 @@ function searchImages(event) {
     imagesApiService.resetPage();
     imagesApiService.fetchImages()
         .then(({ totalHits, hits }) => {
+            if (totalHits / (imagesApiService.page - 1) < imagesApiService.perPage && hits.length !== 0) {
+                refs.loadMoreBtn.classList.add('is-hidden');
+                Notify.info("We're sorry, but you've reached the end of search results.");
+            };
             if (hits.length > 0) {
                 Notify.success(`Hooray! We found ${totalHits} images.`);
             };
             if (hits.length === 0) {
-                Notify.warning("Sorry, there are no images matching your search query. Please try again.");
                 refs.loadMoreBtn.classList.add('is-hidden');
+                Notify.warning("Sorry, there are no images matching your search query. Please try again.");
             } else {
                 renderGallery(hits);
             };
@@ -37,16 +43,26 @@ function renderGallery(arrayForGallery) {
     const galleryMarkup = createGalleryMarkup(arrayForGallery);
 
     refs.galleryListEl.insertAdjacentHTML('beforeend', galleryMarkup);
+
+    let lightbox = new SimpleLightbox('.gallery .gallery__item', {
+        captionsData: 'alt',
+        captionPosition: 'bottom',
+        captionDelay: 250,
+    });
+
+    return lightbox;
 };
 
 function createGalleryMarkup(imagesArray) {
     return imagesArray
         .map(image => {
-            const { webformatURL, tags, likes, views, comments, downloads } = image;
+            const { webformatURL, largeImageURL, tags, likes, views, comments, downloads } = image;
 
             return `
                 <div class="photo-card">
-                    <img src="${webformatURL}" alt="${tags}" loading="lazy" width="320px" height="210px"/>
+                    <a class="gallery__item" href="${largeImageURL}">
+                        <img src="${webformatURL}" alt="${tags}" loading="lazy" width="320px" height="210px"/>
+                    </a>
                     <div class="info">
                         <p class="info-item">
                             <b>Likes</b><br/>${likes}
@@ -69,8 +85,12 @@ function createGalleryMarkup(imagesArray) {
 
 function onLoadMore () {
     imagesApiService.fetchImages()
-        .then(({ hits }) => {
+        .then(({ totalHits, hits }) => {
             renderGallery(hits);
+            if (totalHits / (imagesApiService.page - 1) < imagesApiService.perPage && hits.length !== 0) {
+                refs.loadMoreBtn.classList.add('is-hidden');
+                Notify.info("We're sorry, but you've reached the end of search results.");
+            };
         })
         .catch (onFetchError);
 };
